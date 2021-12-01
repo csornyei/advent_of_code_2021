@@ -1,0 +1,19 @@
+{
+  "name": "advent_of_code",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "Mate Csornyei <mate@csornyei.com> (https://csornyei.com/)",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  },
+  "dependencies": {
+    "yargs": "^17.3.0"
+  }
+}
