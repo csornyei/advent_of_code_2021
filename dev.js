@@ -15,4 +15,8 @@ dev.stdout.on('data', data => {
 
 dev.on("exit", code => {
     console.log(`Exited with code ${code}`);
-})
+});
+
+dev.stderr.on("data", err => {
+    console.log(err.toString());
+});
