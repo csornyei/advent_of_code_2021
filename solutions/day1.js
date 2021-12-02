@@ -1,4 +1,5 @@
 function firstSolution(input) {
+    input = input.map(n => parseInt(n));
     let increased = 0;
     for (let index = 1; index < input.length; index++) {
         const current = input[index];
@@ -9,6 +10,7 @@ function firstSolution(input) {
 }
 
 function secondSolution(input) {
+    input = input.map(n => parseInt(n));
     let increased = 0;
     const sum = (prev, current) => prev + current;
     for (let index = 3; index < input.length; index++) {
