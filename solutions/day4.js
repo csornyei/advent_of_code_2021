@@ -1,3 +1,5 @@
+const fs = require("fs");
+
 function getDrawnNumbers(drawnNumberRow) {
     return drawnNumberRow.split(",").map(n => parseInt(n));
 }
@@ -37,7 +39,7 @@ function parseRowsToBoards(rows) {
             rowIndex += 1;
         }
     }
-    return boards;
+    return boards.slice(0, -1);
 }
 
 function markNumber(board, num) {
@@ -107,7 +109,32 @@ function getWinningBoard(drawnNumbers, boards) {
             boards[index] = newBoard;
         }
     }
-    return [-1, null];
+    throw new Error("No winning board!");
+}
+
+function getLastWinningBoard(drawnNumbers, boards) {
+    for (let index = 0; index < drawnNumbers.length; index++) {
+        const num = drawnNumbers[index]
+        for (let index = 0; index < boards.length; index++) {
+            const board = boards[index];
+            const [win, newBoard] = markNumber(board, num);
+            if (win && boards.length === 1) {
+                return [num, newBoard];
+            }
+            if (win) {
+                boards[index] = null;
+            } else {
+                boards[index] = newBoard;
+            }
+        }
+        boards = boards.filter(board => !!board);
+    }
+    throw new Error("No board left! Something is wrong");
+}
+
+function calculateScore(unmarkedNums, lastDrawnNum) {
+    const sum = unmarkedNums.reduce((prev, curr) => prev + curr);
+    return sum * lastDrawnNum;
 }
 
 function firstSolution(input) {
@@ -115,13 +142,17 @@ function firstSolution(input) {
     const drawnNumbers = getDrawnNumbers(drawnNumbersRow);
     const boards = parseRowsToBoards(rows);
     const [lastNumber, winnerBoard] = getWinningBoard(drawnNumbers, boards);
-    const sum = winnerBoard.unmarked.reduce((prev, curr) => prev + curr);
-    const finalScore = sum * lastNumber;
+    const finalScore = calculateScore(winnerBoard.unmarked, lastNumber);
     console.log("First solution result: ", finalScore);
 }
 
 function secondSolution(input) {
-    console.log("Second Solution")
+    const [drawnNumbersRow, ...rows] = input;
+    const drawnNumbers = getDrawnNumbers(drawnNumbersRow);
+    const boards = parseRowsToBoards(rows);
+    const [lastNumber, winnerBoard] = getLastWinningBoard(drawnNumbers, boards);
+    const finalScore = calculateScore(winnerBoard.unmarked, lastNumber);
+    console.log("Second Solution result: ", finalScore)
 }
 
 module.exports = {
