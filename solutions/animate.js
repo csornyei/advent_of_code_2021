@@ -9,7 +9,8 @@ const ctxCommands = {
     lineTo: "lineTo",
     moveTo: "moveTo",
     stroke: "stroke",
-    clear: "clear"
+    clear: "clear",
+    strokeStyle: "strokeStyle"
 }
 
 /**
@@ -19,18 +20,20 @@ const ctxCommands = {
 */
 
 /**
- * Return the command required for drawing a line
+* Return the command required for drawing a line
  * @param {number} startX Line starting X coordinate
  * @param {number} startY Line starting Y coordinate
  * @param {number} endX Line ending X coordinate
  * @param {number} endY Line ending Y coordinate
+ * @param {string} [color="#000"] Color of the line
  * @returns {Commands} command to draw a line
  */
-function drawLine(startX, startY, endX, endY) {
+function drawColoredLine(startX, startY, endX, endY, color = "#000") {
     return [
         { command: ctxCommands.beginPath, args: [] },
         { command: ctxCommands.moveTo, args: [startX, startY] },
         { command: ctxCommands.lineTo, args: [endX, endY] },
+        { command: ctxCommands.strokeStyle, args: [color] },
         { command: ctxCommands.stroke, args: [] },
         { command: ctxCommands.closePath, args: [] }
     ]
@@ -43,19 +46,21 @@ function drawLine(startX, startY, endX, endY) {
  * @param {number} endX Line ending X coordinate
  * @param {number} endY Line ending Y coordinate
  * @param {number} frames How many frames drawing the line should take
+ * @param {string} [color="#000"] Color of the line
  * @returns {Commands[]} finalFrames
  */
-function animateDrawLine(startX, startY, endX, endY, frames) {
+function animateDrawLine(startX, startY, endX, endY, frames, color = "#000") {
     const finalFrames = [];
     const xStep = (endX - startX) / frames;
     const yStep = (endY - startY) / frames;
     for (let index = 0; index < frames; index++) {
         finalFrames.push(
-            drawLine(
+            drawColoredLine(
                 startX,
                 startY,
                 startX + (index * Math.round(xStep)),
-                startY + (index * Math.round(yStep))
+                startY + (index * Math.round(yStep)),
+                color
             )
         );
     }
@@ -96,15 +101,6 @@ function mergeFrames(animation, ...frames) {
     return animation;
 }
 
-function drawAxes() {
-    const animation = Array.from({ length: 100 }, () => ([{ command: ctxCommands.clear, args: [] }]))
-    return mergeFrames(
-        animation,
-        { start: 1, frames: animateDrawLine(490, 290, 5, 290, 30), final: drawLine(5, 290, 490, 290) },
-        { start: 10, frames: animateDrawLine(5, 5, 5, 290, 20), final: drawLine(5, 5, 5, 290) }
-    );
-}
-
 /**
  * One frame animation, start with clearing the canvas and draw the current frame objects.
  * Requests a new frame and either draw the next frame or start over from the beginning
@@ -134,6 +130,9 @@ function animationStep(canvas, ctx, idx, canvasObjects) {
                 break;
             case ctxCommands.clear:
                 ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+                break;
+            case ctxCommands.strokeStyle:
+                ctx.strokeStyle = args[0];
                 break;
             default:
                 break;

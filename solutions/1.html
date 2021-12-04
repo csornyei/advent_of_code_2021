@@ -14,7 +14,7 @@
     <main>
       <div>
         <h2>First Task</h2>
-        <canvas id="first-task-canvas" width="500" height="300"></canvas>
+        <canvas id="first-task-canvas" width="4020" height="620"></canvas>
       </div>
       <div>
         <h2>Second Task</h2>
@@ -26,9 +26,42 @@
       <a href="2.html">Next</a>
     </footer>
     <script src="animate.js"></script>
+    <script src="day1animate.js"></script>
     <script>
-      const axes = drawAxes();
-      animateCanvas("first-task-canvas", axes);
+      const baseAnimation = Array.from({ length: 11500 }, () => [
+        { command: ctxCommands.clear, args: [] },
+      ]);
+
+      function drawAxes(canvasHeight, canvasWidth) {
+        return mergeFrames(
+          baseAnimation,
+          {
+            start: 1,
+            frames: animateDrawLine(
+              canvasWidth - 10,
+              canvasHeight - 10,
+              10,
+              canvasHeight - 10,
+              30
+            ),
+            final: drawColoredLine(
+              10,
+              canvasHeight - 10,
+              canvasWidth - 10,
+              canvasHeight - 10
+            ),
+          },
+          {
+            start: 10,
+            frames: animateDrawLine(10, 10, 10, canvasHeight - 10, 20),
+            final: drawColoredLine(10, 10, 10, canvasHeight - 10),
+          }
+        );
+      }
+      const axes = drawAxes(600, 4000);
+      const canvasObjects = mergeFrames(axes, ...firstTask());
+      console.log(canvasObjects[532]);
+      animateCanvas("first-task-canvas", canvasObjects);
     </script>
   </body>
 </html>
