@@ -1,14 +1,3 @@
-
-/**
- * Generate a two dimensional n*m sized array filled with 0s
- * @param {number} width
- * @param {number} height
- */
-function generateMap(width, height) {
-    const map = Array.apply(null, new Array(height)).map(() => new Array(width).fill(0));
-    return map
-}
-
 /**
  * Decide if line is vertical or horizontal
  * @param {number[]} start  start coordinates for the line
@@ -127,88 +116,72 @@ function getLineCoords(start, end) {
 }
 
 /**
- * Fill map with line
- * @param {number[][]} map  two dimensional array to fill
- * @param {number[]} start  start coordinates for the line
- * @param {number[]} end    end coordinates for the line
- * @returns {number[][]}    map with the line added
+ * Parse input to coordinate pairs
+ * Input should be formatted like x1,y1 -> x2,y2
+ * @param {string[]} input  Input coordinates
+ * @returns {number[][]}    Coordinates
  */
-function addCoordToMap(map, coords) {
-    const [x, y] = coords;
-    map[y][x] += 1;
-    return map;
-}
-
-/**
- * Print map to the console for testing
- * @param {number[][]} map  the map to print
- */
-function printMap(map) {
-    map.forEach(row => {
-        console.log(row.join(""));
-    })
-}
-
-/**
- * Calculate dangerous points on the map where the value is 2 or above
- * @param {number[][]} map  the map
- * @returns {number}    Count of points where the value is 2 or higher
- */
-function getPointsFromMap(map) {
-    const points = map.reduce((prev, current) => {
-        const pointsInRow = current.reduce((prev, current) => {
-            if (current >= 2) return prev + 1;
-            return prev;
-        }, 0);
-        return prev + pointsInRow;
-    }, 0);
-    return points;
-}
-
 function parseInputsToCoords(input) {
-    let maxWidth = -1;
-    let maxHeight = -1;
-    const coords = input.map(row => {
-        return row.split("->").map(coords => {
-            const [x, y] = coords.trim().split(",").map(coord => parseInt(coord));
-            if (x > maxWidth) maxWidth = x;
-            if (y > maxHeight) maxHeight = y;
-            return [x, y];
-        });
-    });
-    return { coords, maxWidth, maxHeight };
+    return input.map(row => (
+        row.split("->").map(coords => (
+            coords.trim().split(",").map(coord => parseInt(coord))
+        ))
+    ));
 }
 
-/**
- * Solution for the first task
- * @param {string[]} input  inputs in the format x1,y1 -> x2,y2
- */
 function firstSolution(input) {
-    const { coords, maxWidth, maxHeight } = parseInputsToCoords(input);
-    let map = generateMap(maxWidth + 1, maxHeight + 1);
+    const coords = parseInputsToCoords(input);
+    const dangerousPoints = [];
     coords.forEach(coord => {
         const [start, end] = coord;
         if (checkLineType(start, end) !== "diagonal") {
-            getLineCoords(start, end).forEach(c => {
-                map = addCoordToMap(map, c);
-            })
+            dangerousPoints.push(...getLineCoords(start, end));
         }
     });
-    const points = getPointsFromMap(map);
-    console.log("Dangerous Points: ", points);
+    const coordsMap = {};
+    dangerousPoints.forEach(([x, y]) => {
+        if (coordsMap.hasOwnProperty(x)) {
+            if (coordsMap[x].hasOwnProperty(y)) {
+                coordsMap[x][y] += 1;
+            } else {
+                coordsMap[x][y] = 1;
+            }
+        } else {
+            coordsMap[x] = {
+                [y]: 1
+            }
+        }
+    });
+    const points = Object.values(coordsMap).reduce((prev, yValues) => {
+        return prev + Object.values(yValues).filter(v => v >= 2).length
+    }, 0);
+    console.log(points);
 }
 
 function secondSolution(input) {
-    const { coords, maxWidth, maxHeight } = parseInputsToCoords(input);
-    let map = generateMap(maxWidth + 1, maxHeight + 1);
+    const coords = parseInputsToCoords(input);
+    const dangerousPoints = [];
     coords.forEach(coord => {
-        const [start, end] = coord;
-        getLineCoords(start, end).forEach(c => {
-            map = addCoordToMap(map, c);
-        })
+        dangerousPoints.push(...getLineCoords(coord[0], coord[1]));
     });
-    const points = getPointsFromMap(map);
-    console.log("Dangerous Points: ", points);
+    const coordsMap = {};
+    dangerousPoints.forEach(([x, y]) => {
+        if (coordsMap.hasOwnProperty(x)) {
+            if (coordsMap[x].hasOwnProperty(y)) {
+                coordsMap[x][y] += 1;
+            } else {
+                coordsMap[x][y] = 1;
+            }
+        } else {
+            coordsMap[x] = {
+                [y]: 1
+            }
+        }
+    });
+    const points = Object.values(coordsMap).reduce((prev, yValues) => {
+        return prev + Object.values(yValues).filter(v => v >= 2).length
+    }, 0);
+    console.log(points);
 }
 
 module.exports = {
