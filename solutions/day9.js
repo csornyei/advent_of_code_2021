@@ -31,6 +31,66 @@ function calculateRisk(heights) {
 }
 
 /**
+ * Get coordinates for adjacent points
+ * @param {Number[]} coordinates - coordinates for starting point in the format of [row, col]
+ * @param {Number} width - width of the map
+ * @param {Number} height - height of the map
+ * @returns {Number[][]} adjacent coordinates in the format of [row, col][]
+ */
+function getAdjacentCoordinates(coordinates, width, height) {
+    const [rowIdx, cellIdx] = coordinates;
+
+    if (rowIdx === 0) {
+        if (cellIdx === 0) {
+            return [[rowIdx + 1, cellIdx], [rowIdx, cellIdx + 1]]
+        } else if (cellIdx === width - 1) {
+            return [[rowIdx + 1, cellIdx], [rowIdx, cellIdx - 1]];
+        } else {
+            return [
+                [rowIdx + 1, cellIdx],
+                [rowIdx, cellIdx - 1],
+                [rowIdx, cellIdx + 1]
+            ];
+        }
+    }
+    else if (rowIdx === height - 1) {
+        if (cellIdx === 0) {
+            return [
+                [rowIdx - 1, cellIdx], [rowIdx, cellIdx + 1]
+            ]
+        } else if (cellIdx === width - 1) {
+            return [[rowIdx - 1, cellIdx], [rowIdx, cellIdx - 1]];
+        } else {
+            return [
+                [rowIdx - 1, cellIdx],
+                [rowIdx, cellIdx - 1],
+                [rowIdx, cellIdx + 1]
+            ]
+        }
+    }
+    else if (cellIdx === 0) {
+        return [
+            [rowIdx + 1, cellIdx],
+            [rowIdx - 1, cellIdx],
+            [rowIdx, cellIdx + 1]
+        ]
+    } else if (cellIdx === width - 1) {
+        return [
+            [rowIdx + 1, cellIdx],
+            [rowIdx, cellIdx - 1],
+            [rowIdx - 1, cellIdx]
+        ]
+    } else {
+        return [
+            [rowIdx + 1, cellIdx],
+            [rowIdx - 1, cellIdx],
+            [rowIdx, cellIdx - 1],
+            [rowIdx, cellIdx + 1]
+        ];
+    }
+}
+
+/**
  * Solution for the first task
  * @param {string[]} input
  */
@@ -45,6 +105,20 @@ function firstSolution(input) {
 
     const lowPoints = [];
 
+    heightMap.forEach((row, rowIdx) => {
+        row.forEach((num, cellIdx) => {
+            const adjCoords = getAdjacentCoordinates([rowIdx, cellIdx], width, height);
+            const adjValues = [];
+            adjCoords.forEach(([adjRow, adjCol]) => {
+                adjValues.push(heightMap[adjRow][adjCol]);
+            })
+            if (isLowestPoint(num, ...adjValues)) {
+                lowPoints.push(num);
+            }
+        })
+    });
+    console.log(calculateRisk(lowPoints));
+}
     heightMap.forEach((row, rowIdx) => {
         row.forEach((num, cellIdx) => {
             if (rowIdx === 0) {
