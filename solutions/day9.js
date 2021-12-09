@@ -91,6 +91,46 @@ function getAdjacentCoordinates(coordinates, width, height) {
 }
 
 /**
+ * Parse coordinates to string in order to store them in an object
+ * @param {Number[]} coordinates - coordinates in format of [row, col]
+ * @returns {String}
+ */
+function coordsToString(coordinates) {
+    return coordinates.join(",");
+}
+
+/**
+ * Find area in map which is bordered by 9s
+ * @param {Number[]} coordinates - start coordinates in format of [row, col]
+ * @param {Number[][]} map - the map which contains the location
+ * @returns {Map<String, Number>} coordinates around (and including) the start coordinates which is bordered by 9s
+ */
+function findBasin(coordinates, map) {
+    const checked = new Map();
+    checked.set(coordsToString(coordinates), map[coordinates[0]][coordinates[1]]);
+    const width = map[0].length;
+    const height = map.length;
+    const toCheck = [...getAdjacentCoordinates(coordinates, width, height)];
+    while (toCheck.length > 0) {
+        const coord = toCheck.pop();
+        if (!checked.has(coordsToString(coord))) {
+            if (map[coord[0]][coord[1]] !== 9) {
+                const adjacents = getAdjacentCoordinates(coord, width, height);
+                adjacents.forEach(adj => {
+                    if (!checked.has(coordsToString(coord))) {
+                        toCheck.push(adj);
+                    }
+                });
+                checked.set(coordsToString(coord), map[coord[0]][coord[1]]);
+            } else {
+                checked.set(coordsToString(coord), 9);
+            }
+        }
+    }
+    return checked;
+}
+
+/**
  * Solution for the first task
  * @param {string[]} input
  */
@@ -98,10 +138,8 @@ function firstSolution(input) {
     const heightMap = input.map(row => {
         return row.split("").map(n => parseInt(n))
     });
-    printhHeightMap(heightMap);
     const width = heightMap[0].length;
     const height = heightMap.length;
-    console.log("Width:", width, "Height:", height);
 
     const lowPoints = [];
 
@@ -119,83 +157,46 @@ function firstSolution(input) {
     });
     console.log(calculateRisk(lowPoints));
 }
-    heightMap.forEach((row, rowIdx) => {
-        row.forEach((num, cellIdx) => {
-            if (rowIdx === 0) {
-                if (cellIdx === 0) {
-                    if (isLowestPoint(num, heightMap[rowIdx + 1][cellIdx], heightMap[rowIdx][cellIdx + 1])) {
-                        lowPoints.push(num);
-                    }
-                } else if (cellIdx === width - 1) {
-                    if (isLowestPoint(num, heightMap[rowIdx + 1][cellIdx], heightMap[rowIdx][cellIdx - 1])) {
-                        lowPoints.push(num);
-                    }
-                } else {
-                    if (isLowestPoint(num,
-                        heightMap[rowIdx + 1][cellIdx],
-                        heightMap[rowIdx][cellIdx - 1],
-                        heightMap[rowIdx][cellIdx + 1]
-                    )) {
-                        lowPoints.push(num);
-                    }
-                }
-            }
-            else if (rowIdx === height - 1) {
-                if (cellIdx === 0) {
-                    if (isLowestPoint(num, heightMap[rowIdx - 1][cellIdx], heightMap[rowIdx][cellIdx + 1])) {
-                        lowPoints.push(num);
-                    }
-                } else if (cellIdx === width - 1) {
-                    if (isLowestPoint(num, heightMap[rowIdx - 1][cellIdx], heightMap[rowIdx][cellIdx - 1])) {
-                        lowPoints.push(num);
-                    }
-                } else {
-                    if (isLowestPoint(num,
-                        heightMap[rowIdx - 1][cellIdx],
-                        heightMap[rowIdx][cellIdx - 1],
-                        heightMap[rowIdx][cellIdx + 1]
-                    )) {
-                        lowPoints.push(num);
-                    }
-                }
-            }
-            else if (cellIdx === 0) {
-                if (isLowestPoint(num,
-                    heightMap[rowIdx + 1][cellIdx],
-                    heightMap[rowIdx - 1][cellIdx],
-                    heightMap[rowIdx][cellIdx + 1]
-                )) {
-                    lowPoints.push(num);
-                }
-            } else if (cellIdx === width - 1) {
-                if (isLowestPoint(num,
-                    heightMap[rowIdx + 1][cellIdx],
-                    heightMap[rowIdx][cellIdx - 1],
-                    heightMap[rowIdx - 1][cellIdx]
-                )) {
-                    lowPoints.push(num);
-                }
-            } else {
-                if (isLowestPoint(num,
-                    heightMap[rowIdx + 1][cellIdx],
-                    heightMap[rowIdx - 1][cellIdx],
-                    heightMap[rowIdx][cellIdx - 1],
-                    heightMap[rowIdx][cellIdx + 1]
-                )) {
-                    lowPoints.push(num);
-                }
-            }
-        })
-    });
-    console.log(calculateRisk(lowPoints));
-}
 
 /**
  * Solution for the first task
  * @param {string[]} input
  */
 function secondSolution(input) {
+    const heightMap = input.map(row => {
+        return row.split("").map(n => parseInt(n))
+    });
+    const width = heightMap[0].length;
+    const height = heightMap.length;
 
+    const lowPoints = [];
+
+    heightMap.forEach((row, rowIdx) => {
+        row.forEach((num, cellIdx) => {
+            const adjCoords = getAdjacentCoordinates([rowIdx, cellIdx], width, height);
+            const adjValues = [];
+            adjCoords.forEach(([adjRow, adjCol]) => {
+                adjValues.push(heightMap[adjRow][adjCol]);
+            })
+            if (isLowestPoint(num, ...adjValues)) {
+                lowPoints.push([rowIdx, cellIdx]);
+            }
+        })
+    });
+
+    let basinLenghts = [];
+    lowPoints.forEach(lp => {
+        const basin = findBasin(lp, heightMap);
+        const points = [];
+        basin.forEach((val, key) => {
+            if (val !== 9) {
+                points.push(key);
+            }
+        });
+        basinLenghts.push(points.length);
+    });
+    basinLenghts = basinLenghts.sort((a, b) => b - a);
+    console.log(basinLenghts[0] * basinLenghts[1] * basinLenghts[2]);
 }
 
 module.exports = {
