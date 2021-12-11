@@ -8,6 +8,7 @@ const day7 = require('./day7');
 const day8 = require('./day8');
 const day9 = require('./day9');
 const day10 = require('./day10');
+const day11 = require('./day11');
 
 module.exports = {
     1: day1,
@@ -20,4 +21,5 @@ module.exports = {
     8: day8,
     9: day9,
     10: day10,
+    11: day11,
 };
