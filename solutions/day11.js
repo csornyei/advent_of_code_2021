@@ -141,6 +141,16 @@ function flash(grid) {
     return [flashes, grid];
 }
 
+/**
+ * Calculate the energy level of the whole grid
+ * @param {number[][]} grid
+ * @returns {number}
+ */
+function gridSum(grid) {
+    return grid.reduce((prevValue, currentRow) => {
+        return prevValue + currentRow.reduce((prev, current) => prev + current);
+    }, 0);
+}
 
 /**
  * Solution for the first task
@@ -158,8 +168,10 @@ function firstSolution(input) {
         simulationStep += 1;
     }
 
+    console.log("First solution: \n\n");
     printGrid(octopusGrid);
     console.log(flashes);
+    console.log("\n\n----------------------");
 }
 
 /**
@@ -169,17 +181,18 @@ function firstSolution(input) {
 function secondSolution(input) {
     let octopusGrid = input.map(row => row.split("").map(n => parseInt(n)));
     let simulationStep = 0;
-    let flashes = 0;
-    while (simulationStep < 100) {
+    let allFlashed = false;
+    while (!allFlashed) {
         octopusGrid = increaseEnergyLevels(octopusGrid);
-        const result = flash(octopusGrid);
-        flashes += result[0];
-        octopusGrid = result[1];
+        const [_, newGrid] = flash(octopusGrid);
+        octopusGrid = newGrid;
+        const gridValue = gridSum(octopusGrid);
+        if (gridValue === 0) {
+            allFlashed = true;
+        }
         simulationStep += 1;
     }
-
-    printGrid(octopusGrid);
-    console.log(flashes);
+    console.log("Second task result: ", simulationStep);
 }
 
 module.exports = {
